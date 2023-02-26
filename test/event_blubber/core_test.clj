@@ -10,3 +10,13 @@
       (jasonify batch n)
       (is (some #{(take 100 batch)} @result)))))
 
+(deftest should-calmly-react-to-bad-numbers
+  (testing "Given a batch with a number greater than 10 it handles it gracefully"
+    (let [batch (vec (take 999 (repeatedly #(rand-int 10))))
+          bad-batch (assoc batch 234 66)
+          result (atom [])
+          n (fn [batch] (let [[good bad] ((juxt filter remove) #(< % 10) batch)]
+                          (swap! result conj good)
+                          bad))
+          bad (jasonify bad-batch n)]
+      (is (some #{66} bad)))))
